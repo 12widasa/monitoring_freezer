@@ -68,6 +68,15 @@
                         </div>
                     </div>
 
+                    <!-- [Pasti] Fitur Remember Me Checkbox -->
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center gap-2 cursor-pointer select-none">
+                            <input type="checkbox" name="remember" id="remember"
+                                class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20">
+                            <span class="text-xs text-slate-600">Ingat akun saya</span>
+                        </label>
+                    </div>
+
                     <button type="submit"
                         class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 font-semibold rounded-xl text-sm text-white transition-colors shadow-lg shadow-blue-600/30">
                         Masuk

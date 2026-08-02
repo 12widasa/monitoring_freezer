@@ -22,14 +22,22 @@ class LoginController extends Controller
 
         $fieldType = filter_var($request->identity, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
-        if (Auth::attempt([$fieldType => $credentials['identity'], 'password' => $credentials['password']])) {
+        // [Pasti] Tangkap nilai checkbox "remember"
+        $remember = $request->boolean('remember');
+
+        // [Pasti] Oper variabel $remember sebagai parameter kedua Auth::attempt
+        if (Auth::attempt([
+            $fieldType => $credentials['identity'],
+            'password' => $credentials['password'],
+            'is_active' => true,
+        ], $remember)) {
             $request->session()->regenerate();
 
-            return match (Auth::user()->role) {
-                'admin' => redirect()->intended('/admin/dashboard'),
-                'technician' => redirect()->intended('/technician/repairs'),
-                'customer' => redirect()->intended('/customer/monitoring'),
-                default => redirect()->intended('/login'),
+            return match (Auth::user()->role->value) {
+                'admin' => redirect()->intended(route('admin.dashboard')),
+                'technician' => redirect()->intended(route('technician.dashboard')),
+                'customer' => redirect()->intended(route('customer.monitoring')),
+                default => redirect()->route('login'),
             };
         }
 
