@@ -1,10 +1,8 @@
 @import "tailwindcss";
+@import "../../node_modules/flowbite/src/themes/default.css";
 
-/* [Pasti] Kunci dark mode di Tailwind v4 agar hanya aktif via class .dark */
 @custom-variant dark (&:where(.dark, .dark *));
-
 @plugin "../../node_modules/flowbite/plugin.js";
-
 @source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
 @source "../../storage/framework/views/*.php";
 @source "../../node_modules/flowbite/**/*.js";
