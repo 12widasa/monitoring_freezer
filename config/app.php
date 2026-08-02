@@ -67,6 +67,11 @@ return [
 
     'timezone' => 'UTC',
 
+    'display_timezone' => env(
+        'DISPLAY_TIMEZONE',
+        'Asia/Jakarta',
+    ),
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration
