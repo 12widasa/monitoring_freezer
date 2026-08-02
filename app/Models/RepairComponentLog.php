@@ -2,19 +2,18 @@
 
 namespace App\Models;
 
-use App\Enums\RepairStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class RepairLog extends Model
+class RepairComponentLog extends Model
 {
     public $timestamps = false;
 
     protected $fillable = [
-        'repair_id',
+        'repair_component_id',
         'status',
-        'description',
+        'quantity',
+        'note',
         'updated_by',
         'created_at',
     ];
@@ -22,23 +21,18 @@ class RepairLog extends Model
     protected function casts(): array
     {
         return [
-            'status' => RepairStatus::class,
+            'quantity' => 'integer',
             'created_at' => 'datetime',
         ];
     }
 
-    public function repair(): BelongsTo
+    public function repairComponent(): BelongsTo
     {
-        return $this->belongsTo(Repair::class);
+        return $this->belongsTo(RepairComponent::class);
     }
 
     public function updater(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
-    }
-
-    public function photos(): HasMany
-    {
-        return $this->hasMany(RepairLogPhoto::class);
     }
 }

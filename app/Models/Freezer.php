@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
-use App\Enums\VerificationStatus;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Freezer extends Model
 {
@@ -15,29 +17,32 @@ class Freezer extends Model
         'capacity_liter',
         'estimated_age',
         'photo_path',
-        'status_verifikasi',
-        'rejection_reason',
-        'complaint_note',
         'created_by',
-        'verified_by',
-        'verified_at',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'status_verifikasi' => VerificationStatus::class,
-            'verified_at' => 'datetime',
-        ];
-    }
-
-    public function customer()
+    public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
-    public function repairs()
+    public function repairs(): HasMany
     {
         return $this->hasMany(Repair::class);
+    }
+
+    public function serviceIntakes(): HasMany
+    {
+        return $this->hasMany(ServiceIntake::class);
+    }
+
+    public function latestIntake(): HasOne
+    {
+        return $this->hasOne(ServiceIntake::class)
+            ->latestOfMany('received_at');
+    }
+
+    public function latestRepair(): HasOne
+    {
+        return $this->hasOne(Repair::class)->latestOfMany();
     }
 }

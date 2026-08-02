@@ -12,10 +12,10 @@ enum RepairStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::QUEUED => 'Dalam Antrean',
-            self::INSPECTING => 'Pemeriksaan Kerusakan',
-            self::REPAIRING => 'Proses Perbaikan',
-            self::COMPLETED => 'Selesai',
+            self::QUEUED => 'Menunggu diperiksa',
+            self::INSPECTING => 'Sedang diperiksa',
+            self::REPAIRING => 'Sedang diperbaiki',
+            self::COMPLETED => 'Perbaikan selesai',
         };
     }
 

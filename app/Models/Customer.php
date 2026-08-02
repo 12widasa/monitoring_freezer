@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Customer extends Model
 {
@@ -21,5 +22,17 @@ class Customer extends Model
     public function freezers()
     {
         return $this->hasMany(Freezer::class);
+    }
+
+    public function repairs(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Repair::class,
+            Freezer::class,
+            'customer_id',
+            'freezer_id',
+            'id',
+            'id',
+        );
     }
 }
