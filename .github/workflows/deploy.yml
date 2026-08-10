@@ -1,0 +1,59 @@
+name: Deploy Laravel to Shared Hosting
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout kode
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, bcmath, ctype, curl, dom, fileinfo, json, mysql, openssl, pdo, tokenizer, xml
+          coverage: none
+
+      - name: Install dependency Composer
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      # Hapus step ini kalau project tidak punya build frontend (npm/vite)
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependency npm & build asset
+        run: |
+          npm ci
+          npm run build
+
+      - name: Generate cache config & route
+        run: |
+          php artisan config:clear
+          php artisan route:clear
+          php artisan view:clear
+
+      - name: Deploy via FTP/SFTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./
+          server-dir: /public_html/
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/tests/**
+            **/.env
+            **/.env.example
+            **/storage/logs/**
