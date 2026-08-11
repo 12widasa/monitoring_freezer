@@ -66,6 +66,14 @@ jobs:
 
           ls -lh deploy-package/release.tar.gz
 
+      - name: Create release checksum
+        run: |
+          cd deploy-package
+          sha256sum release.tar.gz | awk '{print $1}' > release.sha256
+
+          echo "Release checksum:"
+          cat release.sha256
+
       - name: Upload archive via FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
