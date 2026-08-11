@@ -16,44 +16,53 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: '8.3'
           extensions: mbstring, bcmath, ctype, curl, dom, fileinfo, json, mysql, openssl, pdo, tokenizer, xml
           coverage: none
 
       - name: Install dependency Composer
         run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-      # Hapus step ini kalau project tidak punya build frontend (npm/vite)
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
-      - name: Install dependency npm & build asset
-        run: |
-          npm ci
-          npm run build
+      - name: Install dependency frontend
+        run: pnpm install --frozen-lockfile
 
-      - name: Generate cache config & route
+      - name: Build frontend
+        run: pnpm run build
+
+      - name: Clear Laravel cache
         run: |
           php artisan config:clear
           php artisan route:clear
           php artisan view:clear
 
-      - name: Deploy via FTP/SFTP
+      - name: Deploy via FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
+          port: 21
           local-dir: ./
-          server-dir: /public_html/
+          server-dir: /
+          dry-run: true
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
             **/tests/**
             **/.env
-            **/.env.example
+            **/.env.*
+            **/database/database.sqlite
+            **/public/storage
             **/storage/logs/**
