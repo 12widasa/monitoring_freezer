@@ -1,0 +1,86 @@
+name: Deploy Laravel Archive to Shared Hosting
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  build-and-package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout kode
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, bcmath, ctype, curl, dom, fileinfo, json, mysql, openssl, pdo, tokenizer, xml
+          coverage: none
+
+      - name: Install dependency Composer
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependency frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        run: pnpm run build
+
+      - name: Clear Laravel cache
+        run: |
+          php artisan config:clear
+          php artisan route:clear
+          php artisan view:clear
+
+      - name: Create deployment archive
+        run: |
+          mkdir -p deploy-package
+
+          tar \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.env' \
+            --exclude='.env.testing' \
+            --exclude='.env.backup' \
+            --exclude='.env.production' \
+            --exclude='node_modules' \
+            --exclude='tests' \
+            --exclude='database/database.sqlite' \
+            --exclude='public/storage' \
+            --exclude='storage/logs/*' \
+            --exclude='deploy-package' \
+            -czf deploy-package/release.tar.gz .
+
+          ls -lh deploy-package/release.tar.gz
+
+      - name: Create release checksum
+        run: |
+          cd deploy-package
+          sha256sum release.tar.gz | awk '{print $1}' > release.sha256
+
+          echo "Release checksum:"
+          cat release.sha256
+
+      - name: Upload archive via FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: ./deploy-package/
+          server-dir: /deploy/
