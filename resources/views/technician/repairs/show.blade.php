@@ -352,8 +352,9 @@
                                             </svg>
                                             <span class="mt-2 text-sm font-medium text-slate-700">Pilih foto pemeriksaan</span>
                                             <span class="mt-1 text-xs text-slate-500">JPG, JPEG, atau PNG</span>
-                                            <input id="inspectionPhotos" type="file" name="photos[]" accept=".jpg,.jpeg,.png" multiple class="hidden">
+                                            <input id="inspectionPhotos" type="file" name="photos[]" accept="image/jpeg,image/png" multiple class="hidden" data-photo-input data-photo-summary="inspectionPhotoSummary">
                                         </label>
+                                        <p id="inspectionPhotoSummary" class="mt-2 text-xs text-slate-500" aria-live="polite">Belum ada foto dipilih.</p>
                                     </div>
  
                                     {{-- Kebutuhan komponen --}}
@@ -677,8 +678,9 @@
                                             </svg>
                                             <span class="mt-2 text-sm font-medium text-slate-700">Tambah foto progres</span>
                                             <span class="mt-1 text-xs text-slate-500">JPG, JPEG, atau PNG</span>
-                                            <input id="repairProgressPhotos" type="file" name="photos[]" accept=".jpg,.jpeg,.png" multiple class="hidden">
+                                            <input id="repairProgressPhotos" type="file" name="photos[]" accept="image/jpeg,image/png" multiple class="hidden" data-photo-input data-photo-summary="repairProgressPhotoSummary">
                                         </label>
+                                        <p id="repairProgressPhotoSummary" class="mt-2 text-xs text-slate-500" aria-live="polite">Belum ada foto dipilih.</p>
                                     </div>
  
                                     {{-- Komponen terpasang --}}
@@ -1090,6 +1092,27 @@
  
     <script>
         (function () {
+            document.querySelectorAll('[data-photo-input]').forEach(function (input) {
+                const summary = document.getElementById(input.dataset.photoSummary);
+
+                if (!summary) {
+                    return;
+                }
+
+                input.addEventListener('change', function () {
+                    const files = Array.from(input.files || []);
+
+                    if (files.length === 0) {
+                        summary.textContent = 'Belum ada foto dipilih.';
+                        return;
+                    }
+
+                    summary.textContent = files.length === 1
+                        ? files[0].name
+                        : `${files.length} foto dipilih: ${files.map((file) => file.name).join(', ')}`;
+                });
+            });
+
             const rowsContainer = document.getElementById('inspectionComponentRows');
             const template = document.getElementById('inspectionComponentTemplate');
             const addButton = document.getElementById('addInspectionComponent');
